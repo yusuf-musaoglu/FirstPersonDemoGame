@@ -16,9 +16,9 @@ public class Holding_Tools : MonoBehaviour
         SelectTool();
     }
 
-    void Update()
+    private void Update()
     {
-        int previousSelectedTool = selectedTool;
+        int currentSelectedTool = selectedTool;
         if (next.WasPressedThisFrame())
         {
             if (selectedTool >= transform.childCount -1)
@@ -35,7 +35,7 @@ public class Holding_Tools : MonoBehaviour
                 selectedTool--;
         }
 
-        if (previousSelectedTool != selectedTool)
+        if (currentSelectedTool != selectedTool)
             SelectTool();
     }
 

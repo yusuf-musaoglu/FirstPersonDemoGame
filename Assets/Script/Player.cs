@@ -185,7 +185,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    IEnumerator Rolling()
+    private IEnumerator Rolling()
     {
         duration = .5f;
         float rollAtTheMoment = 0;
@@ -216,7 +216,7 @@ public class Player : MonoBehaviour
             StartCoroutine(ClimbEdge(finalPos));
         }
     }
-    IEnumerator ClimbEdge(Vector3 targetPos)
+    private IEnumerator ClimbEdge(Vector3 targetPos)
     {
         Vector3 startPos = transform.position;
         

@@ -1,1 +1,1 @@
-FirstPersonController
+FirstPersonDemoGame
