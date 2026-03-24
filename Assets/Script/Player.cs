@@ -14,7 +14,7 @@ public class Player : MonoBehaviour
     private InputAction dashAction;
     private InputAction runAction;
     private InputAction crouchAction;
-    public CharacterController controller;
+    private CharacterController controller;
 
     private Vector2 moveInput;
     public Vector3 move;
@@ -43,7 +43,14 @@ public class Player : MonoBehaviour
     [SerializeField] private Transform cameraRoot;
     [SerializeField] private float checkRadius = 0.5f;
 
+    [Header("Crouch Ditails")]
     private bool isCrouching = false;
+    private bool isStanding = false;
+    private float crouchTime = 0;
+    private float standTime = 0;
+    float standPos = 1;
+    float currentPos = 1;
+    float crouchPos = .4f;
 
     [Header("Ground Check")]
     [SerializeField] private LayerMask groundMask;
@@ -136,7 +143,13 @@ public class Player : MonoBehaviour
     {
         if (groundTimer > 1 && isGroundDetect)
         {
+            currentPos = .4f;
+            transform.localScale = new Vector3(transform.localScale.x, currentPos, transform.localScale.z);
+
             StartCoroutine(Rolling());
+
+            isStanding = true;
+            isCrouching = false;
         }
     }
 
@@ -146,7 +159,8 @@ public class Player : MonoBehaviour
         {
             isDashing = true;
 
-            PerformCrouch(true);
+            currentPos = .4f;
+            transform.localScale = new Vector3(transform.localScale.x, currentPos, transform.localScale.z);
 
             move = new Vector3();
             controller.Move(move * Time.deltaTime);
@@ -156,7 +170,6 @@ public class Player : MonoBehaviour
             {
                 isDashing = false;
                 dashComplite = true;
-                isCrouching = false;
             }
             
         }
@@ -164,7 +177,9 @@ public class Player : MonoBehaviour
         {
             dashComplite = false;
             StartCoroutine(Rolling());
-            isCrouching = true;
+            isStanding = true;
+            isCrouching = false;
+
         }
         
     }
@@ -181,7 +196,7 @@ public class Player : MonoBehaviour
         if (slideAtTheMoment > slideTime)
         {
             isSliding = false;
-            CanStandUp();
+            isStanding = true;
         }
     }
 
@@ -220,7 +235,7 @@ public class Player : MonoBehaviour
     {
         Vector3 startPos = transform.position;
         
-        float duration = 1f;
+        float duration = .5f;
         float climbAtTheMoment = 0;
         
         while (climbAtTheMoment < duration)
@@ -228,14 +243,16 @@ public class Player : MonoBehaviour
             float percent = climbAtTheMoment / duration;
             float curve = percent * percent * (2f * percent);
             
-            PerformCrouch(true);
+            currentPos = .4f;
+            transform.localScale = new Vector3(transform.localScale.x, currentPos, transform.localScale.z);
+
             
             transform.position = Vector3.Lerp(startPos, targetPos, curve);
             climbAtTheMoment += Time.deltaTime;
             yield return null;
         }
 
-        CanStandUp();
+        isStanding = true;
         transform.position = targetPos;
     }
     private void HandleCrouch()
@@ -243,18 +260,58 @@ public class Player : MonoBehaviour
         if (crouchAction.IsPressed())
         {
             jumpAction.Disable();
+            crouchTime = 0;
             PerformCrouch(true);
         }
-        else if (isCrouching)
+        else if (isStanding)
         {
             jumpAction.Disable();
-            
             if (CanStandUp())
             {
+                standTime = 0;
                 PerformCrouch(false);
                 jumpAction.Enable();
             }
         }
+        if (crouchAction.WasReleasedThisFrame())
+            isStanding = true;
+    }
+    public void PerformCrouch(bool crouch)
+    {
+        isCrouching = crouch;
+
+        if (isCrouching)
+        {
+            crouchTime += Time.deltaTime;
+            float percent = crouchTime / duration * 3;
+
+            float crouching = Mathf.Lerp(currentPos, crouchPos, percent);
+            currentPos = crouching;
+
+            transform.localScale = new Vector3(transform.localScale.x, crouching, transform.localScale.z);
+            
+        }
+
+        if (!isCrouching)
+        {
+            standTime += Time.deltaTime;
+            float percent = standTime / duration * 3;
+            
+
+            float standing = Mathf.Lerp(currentPos, standPos, percent);
+            currentPos = standing;
+            transform.localScale = new Vector3(transform.localScale.x, standing, transform.localScale.z);
+            
+            if (standing == 1)
+                isStanding = false;
+        }
+    }
+    public bool CanStandUp()
+    {
+        Vector3 startPoint = transform.position + Vector3.up * 0.1f; 
+        float checkDistance = 1.05f; 
+
+        return !Physics.SphereCast(startPoint, checkRadius, Vector3.up, out RaycastHit hit, checkDistance, groundMask) && !isDashing;
     }
     private void Jump()
     {
@@ -266,7 +323,7 @@ public class Player : MonoBehaviour
         {
             verticalVelocity = MathF.Sqrt(air_forge * gravity);
         }
-        if (jumpAction.IsPressed() && !isGrounded && verticalVelocity < 0)
+        if (jumpAction.IsPressed() && groundTimer > 1f)
         {
             verticalVelocity -= Mathf.Lerp(verticalVelocity, 5, 0.1f);
         }
@@ -354,18 +411,6 @@ public class Player : MonoBehaviour
             return runSpeed;
         else 
             return walkSpeed;
-    }
-    public void PerformCrouch(bool crouch)
-    {
-        isCrouching = crouch;
-        transform.localScale = new Vector3(transform.localScale.x, isCrouching ? .4f : 1f, transform.localScale.z);
-    }
-    public bool CanStandUp()
-    {
-        Vector3 startPoint = transform.position + Vector3.up * 0.1f; 
-        float checkDistance = 1.05f; 
-
-        return !Physics.SphereCast(startPoint, checkRadius, Vector3.up, out RaycastHit hit, checkDistance, groundMask) && !isDashing;
     }
     private void ClimbToLatter()
     {
