@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using NUnit.Framework;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -55,7 +54,7 @@ public class Player : MonoBehaviour
     [Header("Ground Check")]
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private Transform groundCheck;
-    [SerializeField] private float groundDistance = 0.6f;
+    //[SerializeField] private float groundDistance = 0.6f;
     private float groundTimer = 0;
     private bool isGrounded;
     private bool isGroundDetect;
@@ -69,8 +68,12 @@ public class Player : MonoBehaviour
     [Header("Slide Ditails")]
     [SerializeField] private float slideTime;
     [SerializeField] private float slideSpeed = 20;
+    [SerializeField] private float slopeSpeed = 6;
     private bool isSliding = false;
+    private bool isSloping = false;
     private float slideAtTheMoment = 5f;
+    private float angle;
+
 
     [Header("Dash Ditails")]
     [SerializeField] private float dashTime;
@@ -82,7 +85,7 @@ public class Player : MonoBehaviour
     [Header("Roll Ditails")]
     [SerializeField] private float rollSpeed = 1;
     [SerializeField] private float duration;
-    [SerializeField] private Vector3 size;
+    [SerializeField] private Vector3 triggerOfRolling;
     
 
 
@@ -137,19 +140,18 @@ public class Player : MonoBehaviour
         if (slideAtTheMoment < slideTime)
             Slide();
         
+        
     }
 
     private void GravityFallRoll()
     {
         if (groundTimer > 1 && isGroundDetect)
         {
-            currentPos = .4f;
-            transform.localScale = new Vector3(transform.localScale.x, currentPos, transform.localScale.z);
+            isStanding = false;
+            transform.localScale = new Vector3(transform.localScale.x, crouchPos, transform.localScale.z);
 
-            StartCoroutine(Rolling());
-
-            isStanding = true;
-            isCrouching = false;
+            if (controller.isGrounded)
+                StartCoroutine(Rolling());
         }
     }
 
@@ -158,9 +160,9 @@ public class Player : MonoBehaviour
         if (dashAtTheMoment < dashTime)
         {
             isDashing = true;
+            isStanding = false;
 
-            currentPos = .4f;
-            transform.localScale = new Vector3(transform.localScale.x, currentPos, transform.localScale.z);
+            transform.localScale = new Vector3(transform.localScale.x, crouchPos, transform.localScale.z);
 
             move = new Vector3();
             controller.Move(move * Time.deltaTime);
@@ -171,22 +173,20 @@ public class Player : MonoBehaviour
                 isDashing = false;
                 dashComplite = true;
             }
-            
         }
         if (dashComplite && isGroundDetect)
         {
             dashComplite = false;
             StartCoroutine(Rolling());
-            isStanding = true;
-            isCrouching = false;
-
         }
         
     }
-
     private void Slide()
     {
+        
         isSliding = true;
+        isStanding = false;
+
         PerformCrouch(true);
 
         move.y = verticalVelocity;
@@ -197,11 +197,32 @@ public class Player : MonoBehaviour
         {
             isSliding = false;
             isStanding = true;
+        } 
+        
+    }
+
+    private void Slope()
+    {
+        if (Physics.Raycast(groundCheck.position, Vector3.down, out RaycastHit hitInfo, 1))
+        {
+            angle = Vector3.Angle(hitInfo.normal, Vector3.up);
+            if (angle > IsItSloping() && controller.isGrounded)
+            {
+                isStanding = false;
+                slopeSpeed = Math.Clamp(slopeSpeed += Time.deltaTime * 20, -15, 15);
+                move = Vector3.ProjectOnPlane(new Vector3(0, -slopeSpeed, 0), hitInfo.normal);
+                controller.Move(move * Time.deltaTime);
+                Debug.Log(slopeSpeed);
+                return;
+            }
+            slopeSpeed = 6;
         }
+
     }
 
     private IEnumerator Rolling()
     {
+        groundTimer = 0;
         duration = .5f;
         float rollAtTheMoment = 0;
         Vector3 axis = RollAxis(); // rotasyonda input hatasi olursa burayi tekrar dene!
@@ -218,8 +239,8 @@ public class Player : MonoBehaviour
             yield return null;
         }
         lookAction.Enable();
+        
     }
-    
     public void CheckForEdge() 
     {  
         Vector3 origin = transform.position + (transform.forward * .6f) + (Vector3.up * 2f);
@@ -227,11 +248,12 @@ public class Player : MonoBehaviour
     
         if (wallClimb && !air_forgeTrigger && CanStandUp() && jumpAction.WasPressedThisFrame() && moveY > 0)
         {
-            Vector3 finalPos = shelfHit.point + new Vector3(0, (controller.height / 2) + .1f, 0);
-            StartCoroutine(ClimbEdge(finalPos));
+            Vector3 finalPos = shelfHit.point + new Vector3(0, controller.height / 2, -.6f);
+            Vector3 finalPos2 = shelfHit.point + new Vector3(0, controller.height / 2, 1.2f);
+            StartCoroutine(ClimbEdge(finalPos, finalPos2));
         }
     }
-    private IEnumerator ClimbEdge(Vector3 targetPos)
+    private IEnumerator ClimbEdge(Vector3 targetPos, Vector3 targetPos2)
     {
         Vector3 startPos = transform.position;
         
@@ -240,14 +262,17 @@ public class Player : MonoBehaviour
         
         while (climbAtTheMoment < duration)
         {
+            transform.localScale = new Vector3(transform.localScale.x, crouchPos, transform.localScale.z);
+
             float percent = climbAtTheMoment / duration;
             float curve = percent * percent * (2f * percent);
-            
-            currentPos = .4f;
-            transform.localScale = new Vector3(transform.localScale.x, currentPos, transform.localScale.z);
-
-            
+                        
             transform.position = Vector3.Lerp(startPos, targetPos, curve);
+            if (targetPos.z == -.6f)
+            {
+                climbAtTheMoment = 0;
+                transform.position = Vector3.Lerp(targetPos, targetPos2, curve);
+            }
             climbAtTheMoment += Time.deltaTime;
             yield return null;
         }
@@ -282,24 +307,21 @@ public class Player : MonoBehaviour
 
         if (isCrouching)
         {
-            crouchTime += Time.deltaTime;
-            float percent = crouchTime / duration * 3;
+            crouchTime += Time.deltaTime * 5;
 
-            float crouching = Mathf.Lerp(currentPos, crouchPos, percent);
+            float crouching = Mathf.Lerp(currentPos, crouchPos, crouchTime + .05f);
             currentPos = crouching;
 
             transform.localScale = new Vector3(transform.localScale.x, crouching, transform.localScale.z);
             
         }
-
         if (!isCrouching)
         {
-            standTime += Time.deltaTime;
-            float percent = standTime / duration * 3;
-            
+            standTime += Time.deltaTime * 5;
 
-            float standing = Mathf.Lerp(currentPos, standPos, percent);
+            float standing = Mathf.Lerp(currentPos, standPos, standTime + .05f);
             currentPos = standing;
+
             transform.localScale = new Vector3(transform.localScale.x, standing, transform.localScale.z);
             
             if (standing == 1)
@@ -315,17 +337,19 @@ public class Player : MonoBehaviour
     }
     private void Jump()
     {
-        if (jumpAction.WasPressedThisFrame() && isGrounded)
+        if (jumpAction.WasPressedThisFrame())
         {
-            verticalVelocity = MathF.Sqrt(jumpForge * gravity);
+            if (controller.isGrounded)
+                verticalVelocity = MathF.Sqrt(jumpForge * gravity);
         }
-        if (jumpAction.IsPressed() && air_forgeTrigger)
+        
+        if (jumpAction.IsPressed())
         {
-            verticalVelocity = MathF.Sqrt(air_forge * gravity);
-        }
-        if (jumpAction.IsPressed() && groundTimer > 1f)
-        {
-            verticalVelocity -= Mathf.Lerp(verticalVelocity, 5, 0.1f);
+            if (air_forgeTrigger)
+                verticalVelocity = MathF.Sqrt(air_forge * gravity * 50);
+            else if (groundTimer > .5f)
+                verticalVelocity -= Mathf.Lerp(verticalVelocity, 5, 0.1f);
+
         }
     }
     private void Movement()
@@ -333,28 +357,33 @@ public class Player : MonoBehaviour
         move = transform.TransformDirection(moveX, 0, moveY);
 
         move.y = verticalVelocity;
+
+        isSloping = slideAction.IsPressed() ? true : false;
         
-        move *= isItRun();
+        Slope();
+        
+        move *= HorizontalVelocity();
+        Debug.Log(HorizontalVelocity());
         
         controller.Move(move * Time.deltaTime);
     }
     private void Gravity()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-        isGroundDetect = Physics.CheckBox(groundCheck.position, size, Quaternion.Euler(0,0,0), groundMask);
+        //isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        isGroundDetect = Physics.CheckBox(groundCheck.position, triggerOfRolling, Quaternion.Euler(0,0,0), groundMask);
         
         if (isDashing)
             verticalVelocity = 0;
-        else if (!toClimb && !isGrounded)
+        else if (!toClimb && !controller.isGrounded)
             verticalVelocity -= gravity * Time.deltaTime;
-        else if (isGrounded && verticalVelocity < 0)
+        else if (controller.isGrounded && verticalVelocity < 0)
             verticalVelocity = -1f;
         else
-            verticalVelocity = 0;
+            verticalVelocity = -1f;
 
         verticalVelocity = Math.Clamp(verticalVelocity,-15 ,15);
 
-        if (!isGrounded && !toClimb)
+        if (!controller.isGrounded && !toClimb)
             groundTimer += Time.deltaTime;
         else
             groundTimer = 0;
@@ -399,30 +428,33 @@ public class Player : MonoBehaviour
         lookAction.Disable();
         jumpAction.Disable();
     }
-    private float isItRun()
+    public float HorizontalVelocity()
     {
         if (isSliding)
             return slideSpeed;
-        else if (isCrouching && !isDashing) 
-            return crouchSpeed;
         else if (isDashing)
             return dashSpeed;
         else if (runAction.IsPressed())
             return runSpeed;
+        else if (isCrouching && !isDashing) 
+            return crouchSpeed;
         else 
             return walkSpeed;
     }
+    private float IsItSloping()
+    {
+        return controller.slopeLimit = isSloping ? 5 : 45; 
+    }
     private void ClimbToLatter()
     {
-        move = transform.TransformDirection(0, moveY, 0);
-        move *= isItRun();
-        if (yRotation < 0 && toClimb)
-        {    
-            controller.Move(move * Time.deltaTime);
-        }
-        if (yRotation > 0 && toClimb)
+        if (toClimb)
         {
-            controller.Move(-move * Time.deltaTime);
+            move = transform.TransformDirection(0, moveY, 0);
+            move *= HorizontalVelocity();
+            if (yRotation < 0)
+                controller.Move(move * Time.deltaTime);
+            if (yRotation > 0)
+                controller.Move(-move * Time.deltaTime);            
         }
     }
     private void OnTriggerEnter(Collider other)
@@ -439,10 +471,14 @@ public class Player : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(groundCheck.position, groundDistance);
+        //Gizmos.DrawWireSphere(groundCheck.position, groundDistance);
+        Gizmos.DrawWireCube(groundCheck.position, triggerOfRolling);
+
         Ray r = new Ray(transform.position + (transform.forward * .6f) + (Vector3.up * 2f), Vector3.down * 155f);
         Gizmos.DrawRay(r);
-        Gizmos.DrawWireCube(groundCheck.position, size);
+        
+        Ray r2 = new Ray(groundCheck.position, Vector3.down * 5);
+        Gizmos.DrawRay(r2);
+        
     }
-
 }
