@@ -1,18 +1,18 @@
 using System;
 using System.Collections;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-    private InputAction moveAction;
+    private InputAction moveAction ;
     private InputAction lookAction;
     private InputAction jumpAction;
     private InputAction slideAction;
     private InputAction dashAction;
     private InputAction runAction;
     private InputAction crouchAction;
+
     private CharacterController controller;
 
     private Vector2 moveInput;
@@ -54,6 +54,7 @@ public class Player : MonoBehaviour
     [Header("Ground Check")]
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private Transform groundCheck;
+    
     //[SerializeField] private float groundDistance = 0.6f;
     private float groundTimer = 0;
     private bool isGrounded;
@@ -122,24 +123,28 @@ public class Player : MonoBehaviour
 
     private void Motion()
     {
-        if (slideAction.WasPressedThisFrame())
-            slideAtTheMoment = 0f;
+        
 
-        if (dashAction.WasPerformedThisFrame())
-            dashAtTheMoment = 0f;
 
         HandleCrouch();
         Gravity();
         Looking();
         Jump();
         Movement();
-        Dash();
 
         GravityFallRoll();
 
-        if (slideAtTheMoment < slideTime)
-            Slide();
-        
+        // Dash Section
+        if (dashAction.WasPerformedThisFrame())
+            dashAtTheMoment = 0f;
+
+        Dash();
+
+        // Slide Section
+        if (slideAction.WasPressedThisFrame())
+            slideAtTheMoment = 0f;
+
+        Slide();
         
     }
 
@@ -159,10 +164,11 @@ public class Player : MonoBehaviour
     {
         if (dashAtTheMoment < dashTime)
         {
+            OnDisable();
             isDashing = true;
             isStanding = false;
 
-            transform.localScale = new Vector3(transform.localScale.x, crouchPos, transform.localScale.z);
+            PerformCrouch(true);
 
             move = new Vector3();
             controller.Move(move * Time.deltaTime);
@@ -174,36 +180,48 @@ public class Player : MonoBehaviour
                 dashComplite = true;
             }
         }
-        if (dashComplite && isGroundDetect)
+        if (dashComplite && controller.isGrounded)
         {
-            dashComplite = false;
             StartCoroutine(Rolling());
+            dashComplite = false;
+            OnEnable();
         }
         
     }
     private void Slide()
     {
-        
-        isSliding = true;
-        isStanding = false;
-
-        PerformCrouch(true);
-
-        move.y = verticalVelocity;
-        controller.Move(move * Time.deltaTime);
-        slideAtTheMoment += Time.deltaTime;
-
-        if (slideAtTheMoment > slideTime)
+        if (slideAtTheMoment < slideTime)
         {
-            isSliding = false;
+            isSliding = true;
+            isStanding = false;
+
+            PerformCrouch(true);
+
+            move.y = verticalVelocity;
+            controller.Move(move * Time.deltaTime);
+            slideAtTheMoment += Time.deltaTime;
+
+            if (slideAtTheMoment > slideTime)
+            {
+                isSliding = false;
+                isStanding = true;
+            }
+        }
+
+        if (slideAction.WasReleasedThisFrame() && slideAtTheMoment > slideTime)
+        {
+            slopeSpeed = 6;
             isStanding = true;
-        } 
-        
+        }
     }
 
     private void Slope()
     {
-        if (Physics.Raycast(groundCheck.position, Vector3.down, out RaycastHit hitInfo, 1))
+        Vector3 zRaycast = new Vector3(0,0,.5f);
+        Vector3 xRaycast = new Vector3(.5f,0,0);
+        //Physics.BoxCast()
+        
+        if (Physics.Raycast(groundCheck.position + zRaycast, Vector3.down, out RaycastHit hitInfo, 1))
         {
             angle = Vector3.Angle(hitInfo.normal, Vector3.up);
             if (angle > IsItSloping() && controller.isGrounded)
@@ -212,12 +230,10 @@ public class Player : MonoBehaviour
                 slopeSpeed = Math.Clamp(slopeSpeed += Time.deltaTime * 20, -15, 15);
                 move = Vector3.ProjectOnPlane(new Vector3(0, -slopeSpeed, 0), hitInfo.normal);
                 controller.Move(move * Time.deltaTime);
-                Debug.Log(slopeSpeed);
+                
                 return;
             }
-            slopeSpeed = 6;
         }
-
     }
 
     private IEnumerator Rolling()
@@ -228,16 +244,21 @@ public class Player : MonoBehaviour
         Vector3 axis = RollAxis(); // rotasyonda input hatasi olursa burayi tekrar dene!
         while (rollAtTheMoment < duration)
         {
+            lookAction.Disable();
+
             rollAtTheMoment += rollSpeed * Time.deltaTime;
             float angle = rollAtTheMoment / duration * 360f;
             
             if (moveX == 0 && moveY == 0)
                 controller.Move(transform.TransformDirection(0,0,1) * Time.deltaTime);
+
             cameraRoot.localRotation = Quaternion.AngleAxis(angle, axis);
-            lookAction.Disable();
             
             yield return null;
         }
+        isStanding = true;
+        isCrouching = false;
+
         lookAction.Enable();
         
     }
@@ -318,6 +339,7 @@ public class Player : MonoBehaviour
         if (!isCrouching)
         {
             standTime += Time.deltaTime * 5;
+            Debug.Log(standTime);
 
             float standing = Mathf.Lerp(currentPos, standPos, standTime + .05f);
             currentPos = standing;
@@ -346,26 +368,29 @@ public class Player : MonoBehaviour
         if (jumpAction.IsPressed())
         {
             if (air_forgeTrigger)
-                verticalVelocity = MathF.Sqrt(air_forge * gravity * 50);
-            else if (groundTimer > .5f)
+                verticalVelocity = MathF.Sqrt(air_forge * gravity);
+            else if (groundTimer > .8f)
                 verticalVelocity -= Mathf.Lerp(verticalVelocity, 5, 0.1f);
 
         }
     }
     private void Movement()
     {
-        move = transform.TransformDirection(moveX, 0, moveY);
+        if (!toClimb)
+        {
+            move = transform.TransformDirection(moveX, 0, moveY);
 
-        move.y = verticalVelocity;
+            move.y = verticalVelocity;
 
-        isSloping = slideAction.IsPressed() ? true : false;
-        
-        Slope();
-        
-        move *= HorizontalVelocity();
-        Debug.Log(HorizontalVelocity());
-        
-        controller.Move(move * Time.deltaTime);
+            isSloping = slideAction.IsPressed() ? true : false;
+            
+            Slope();
+            
+            move *= HorizontalVelocity();
+            
+            controller.Move(move * Time.deltaTime);
+        }
+
     }
     private void Gravity()
     {
@@ -383,7 +408,7 @@ public class Player : MonoBehaviour
 
         verticalVelocity = Math.Clamp(verticalVelocity,-15 ,15);
 
-        if (!controller.isGrounded && !toClimb)
+        if (!controller.isGrounded && !toClimb && !air_forgeTrigger)
             groundTimer += Time.deltaTime;
         else
             groundTimer = 0;
@@ -418,15 +443,15 @@ public class Player : MonoBehaviour
     }  
     public void OnEnable()
     {
-        moveAction.Enable();
-        lookAction.Enable();
         jumpAction.Enable();
+        dashAction.Enable();
+        slideAction.Enable();
     }
     public void OnDisable()
     {
-        moveAction.Disable();
-        lookAction.Disable();
         jumpAction.Disable();
+        dashAction.Disable();
+        slideAction.Disable();
     }
     public float HorizontalVelocity()
     {
@@ -477,7 +502,7 @@ public class Player : MonoBehaviour
         Ray r = new Ray(transform.position + (transform.forward * .6f) + (Vector3.up * 2f), Vector3.down * 155f);
         Gizmos.DrawRay(r);
         
-        Ray r2 = new Ray(groundCheck.position, Vector3.down * 5);
+        Ray r2 = new Ray(groundCheck.position, Vector3.down);
         Gizmos.DrawRay(r2);
         
     }
