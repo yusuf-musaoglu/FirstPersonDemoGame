@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Assets/Script/SpeedUI.cs" />
     <Compile Include="Assets/Script/fishingRod_Script.cs" />
+    <Compile Include="Assets/Script/aquarium_script.cs" />
     <Compile Include="Assets/Script/Holding_Tools.cs" />
     <Compile Include="Assets/TutorialInfo/Scripts/Readme.cs" />
     <Compile Include="Assets/Script/Gizmoz-Test.cs" />
