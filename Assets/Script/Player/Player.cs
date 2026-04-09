@@ -499,7 +499,7 @@ public class Player : MonoBehaviour
     {
         Gizmos.DrawWireCube(groundCheck.position, triggerOfRolling);
 
-        Ray r = new Ray(transform.position + (transform.forward * .6f) + (Vector3.up * 2f), Vector3.down * 155f);
+        Ray r = new Ray(transform.position + (transform.forward * .6f) + (Vector3.up * 2f), Vector3.down);
         Gizmos.DrawRay(r);
         
         Ray r2 = new Ray(groundCheck.position, Vector3.down);

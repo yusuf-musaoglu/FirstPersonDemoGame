@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class fishingRod_Script : MonoBehaviour
+public class FishingRod_Script : MonoBehaviour
 {
     private InputAction leftClick;
 

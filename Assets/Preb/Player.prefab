@@ -1363,7 +1363,7 @@ MonoBehaviour:
   maxDistange: 1.5
   slideTime: 0.3
   slideSpeed: 20
-  slopeSpeed: 5
+  slopeSpeed: 6
   dashTime: 0.2
   dashSpeed: 15
   rollSpeed: 1
