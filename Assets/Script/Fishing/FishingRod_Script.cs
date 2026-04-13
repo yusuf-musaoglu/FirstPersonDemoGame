@@ -11,6 +11,7 @@ public class FishingRod_Script : MonoBehaviour
     [SerializeField] private Transform baitHolder;
 
     private Vector3 startPos;
+    private Vector3 startPosBait;
     private Vector3 currentPos;
     private Vector3 endPos;
 
@@ -24,10 +25,9 @@ public class FishingRod_Script : MonoBehaviour
     private void Awake()
     {
         leftClick = InputSystem.actions.FindAction("LeftClick");
-        
+
         startPos = fishingRod.localPosition;
         endPos = fishingRod.localPosition - (Vector3.forward * .5f);
-
     }
 
     private void Update()
@@ -74,9 +74,8 @@ public class FishingRod_Script : MonoBehaviour
 
             percent = atThisTime / duration;
             curve = percent * percent * (2f * percent);
-            
+
             fishingRod.localPosition = Vector3.Lerp(startPos, endPos, Mathf.Clamp01(curve));
         }
-        
     }
 }

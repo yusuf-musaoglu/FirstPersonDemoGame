@@ -271,11 +271,11 @@ public class Player : MonoBehaviour
     public void CheckForEdge() 
     {  
         Vector3 origin = transform.position + (transform.forward * .6f) + (Vector3.up * 2f);
-        wallClimb = Physics.Raycast(origin, Vector3.down * 1.5f, out RaycastHit shelfHit, maxDistange);
+        wallClimb = Physics.Raycast(origin, Vector3.down * 1.5f, out RaycastHit hitPos, maxDistange);
     
         if (wallClimb && !air_forgeTrigger && CanStandUp() && jumpAction.WasPressedThisFrame() && moveY > 0)
         {
-            Vector3 finalPos = shelfHit.point + new Vector3(0, controller.height / 2, -.6f);
+            Vector3 finalPos = hitPos.point + new Vector3(0, controller.height / 2, 0);
             StartCoroutine(ClimbEdge(finalPos));
         }
     }
@@ -293,7 +293,7 @@ public class Player : MonoBehaviour
             float percent = climbAtTheMoment / duration;
             float curve = percent * percent * (2f * percent);
                         
-            transform.position = Vector3.Lerp(startPos, targetPos, curve);
+            transform.position = Vector3.Slerp(startPos, targetPos, curve);
             
             climbAtTheMoment += Time.deltaTime;
             yield return null;
@@ -504,6 +504,5 @@ public class Player : MonoBehaviour
         
         Ray r2 = new Ray(groundCheck.position, Vector3.down);
         Gizmos.DrawRay(r2);
-        
     }
 }
