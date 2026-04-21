@@ -6,7 +6,6 @@ public class Aquarium_Script : MonoBehaviour
     [SerializeField] private GameObject fish;
 
     [SerializeField] private int maxFish = 5; 
-    
 
     private void Start()
     {

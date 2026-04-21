@@ -1,17 +1,13 @@
-using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class FishingRod_Script : MonoBehaviour
 {
     private InputAction leftClick;
-
     [SerializeField] private Transform fishingRod;
     [SerializeField] private Transform baitHolder;
 
     private Vector3 startPos;
-    private Vector3 startPosBait;
     private Vector3 currentPos;
     private Vector3 endPos;
 
@@ -28,6 +24,7 @@ public class FishingRod_Script : MonoBehaviour
 
         startPos = fishingRod.localPosition;
         endPos = fishingRod.localPosition - (Vector3.forward * .5f);
+        Debug.Log("a");
     }
 
     private void Update()
@@ -77,5 +74,9 @@ public class FishingRod_Script : MonoBehaviour
 
             fishingRod.localPosition = Vector3.Lerp(startPos, endPos, Mathf.Clamp01(curve));
         }
+    }
+    public void OnDisable()
+    {
+        baitHolder.transform.localPosition = new Vector3(.6f, 0.3f, 0.8f);
     }
 }

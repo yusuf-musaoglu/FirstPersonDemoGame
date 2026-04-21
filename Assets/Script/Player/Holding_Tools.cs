@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class Holding_Tools : MonoBehaviour
 {
+    [SerializeField] private Transform baitHolder;
+    FishingRod_Script fRod;
     [SerializeField] private int selectedTool = 0;
     InputAction next;
     InputAction previous;
@@ -44,7 +46,9 @@ public class Holding_Tools : MonoBehaviour
         foreach (Transform weapon in transform)
         {
             if (i == selectedTool)
+            {
                 weapon.gameObject.SetActive(true);
+            }
             else
                 weapon.gameObject.SetActive(false);
             i++;

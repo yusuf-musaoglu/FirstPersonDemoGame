@@ -2,8 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
-public class Player : MonoBehaviour
+public class PlayerTest : MonoBehaviour
 {
     private InputAction moveAction ;
     private InputAction lookAction;
@@ -13,7 +12,8 @@ public class Player : MonoBehaviour
     private InputAction runAction;
     private InputAction crouchAction;
 
-    private CharacterController controller;
+    [SerializeField] private CharacterController controller;
+    [SerializeField] private Transform pb;
 
     private Vector2 moveInput;
     public Vector3 move;
@@ -43,13 +43,13 @@ public class Player : MonoBehaviour
     [SerializeField] private float checkRadius = 0.5f;
 
     [Header("Crouch Ditails")]
-    private bool isCrouching;
-    private bool isStanding;
-    private float crouchTime = 0;
-    private float standTime = 0;
-    float standPos = 2;
-    float currentPos = 2;
-    float crouchPos = .4f;
+    public bool isCrouching;
+    public bool isStanding;
+    public float crouchTime = 0;
+    public float standTime = 0;
+    public float standPos = 1;
+    public float currentPos = 1;
+    public float crouchPos = .4f;
 
     [Header("Ground Check")]
     [SerializeField] private LayerMask groundMask;
@@ -102,7 +102,9 @@ public class Player : MonoBehaviour
         slideAction = InputSystem.actions.FindAction("Slide");
         dashAction = InputSystem.actions.FindAction("Dash");
 
-        controller = GetComponentInChildren<CharacterController>();
+        controller = GetComponentInParent<CharacterController>();
+        pb = GetComponentInParent<Transform>();
+        
     }
     private void Update()
     {
@@ -149,8 +151,7 @@ public class Player : MonoBehaviour
         if (groundTimer > 1 && isGroundDetect)
         {
             isStanding = false;
-            //transform.localScale = new Vector3(transform.localScale.x, crouchPos, transform.localScale.z);
-            controller.height = crouchPos;
+            transform.localScale = new Vector3(transform.localScale.x, crouchPos, transform.localScale.z);
 
             if (controller.isGrounded)
                 StartCoroutine(Rolling());
@@ -284,8 +285,7 @@ public class Player : MonoBehaviour
         
         while (climbAtTheMoment < duration)
         {
-            //transform.localScale = new Vector3(transform.localScale.x, crouchPos, transform.localScale.z);
-            controller.height = crouchPos;
+            transform.localScale = new Vector3(transform.localScale.x, crouchPos, transform.localScale.z);
 
             float percent = climbAtTheMoment / duration;
             float curve = percent * percent * (2f * percent);
@@ -330,27 +330,31 @@ public class Player : MonoBehaviour
             
             float crouching = Mathf.Lerp(currentPos, crouchPos, crouchTime);
             currentPos = crouching;
+
             
             //transform.localScale = new Vector3(transform.localScale.x, crouching, transform.localScale.z);
             controller.height = crouching;
+            
         }
         if (!isCrouching)
         {
-            standTime += Time.deltaTime * 10;
+            standTime += Time.deltaTime * 5;
             
-            if (currentPos > 1.99f) currentPos = 2;
+            if (currentPos > .99f) currentPos = 1;
 
             float standing = Mathf.Lerp(currentPos, standPos, standTime);
             currentPos = standing;
 
+
             //transform.localScale = new Vector3(transform.localScale.x, standing, transform.localScale.z);
             controller.height = standing;
             
-            if (standing == 2)
+            if (standing == 1)
                 isStanding = false;
         }
             
     }
+    
     public bool CanStandUp()
     {
         Vector3 startPoint = transform.position + Vector3.up * 0.1f; 
@@ -436,7 +440,7 @@ public class Player : MonoBehaviour
         yRotation = Mathf.Clamp(yRotation, -70f, 70f);
         cameraRoot.transform.localRotation = Quaternion.Euler(yRotation, 0f, 0f);
         
-        transform.Rotate(Vector3.up * mouseX);
+        pb.transform.Rotate(Vector3.up * mouseX);
     }
     private void InputManagement()
     {
