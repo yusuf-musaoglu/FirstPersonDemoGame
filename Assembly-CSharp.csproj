@@ -49,6 +49,7 @@
     <Analyzer Include="/home/yusuf/Unity/Hub/Editor/6000.0.67f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/Script/UI/ChargeBar.cs" />
     <Compile Include="Assets/Script/Fishing/FishingRod_Script.cs" />
     <Compile Include="Assets/Script/Player/Holding_Tools.cs" />
     <Compile Include="Assets/Script/Fishing/Rope/RopeControllerSimple.cs" />

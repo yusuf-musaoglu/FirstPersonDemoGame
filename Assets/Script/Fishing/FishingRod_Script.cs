@@ -7,11 +7,16 @@ public class FishingRod_Script : MonoBehaviour
     [SerializeField] private Transform fishingRod;
     [SerializeField] private Transform baitHolder;
 
+    [Header("UI Bar Ditails")]
+    [SerializeField] private GameObject chargeBar;
+
     private Vector3 startPos;
     private Vector3 currentPos;
     private Vector3 endPos;
 
     private bool chargedCanceled = false;
+
+    private bool isFullCharged;
 
     private float duration = 1f;
     private float atThisTime = 0;
@@ -24,7 +29,7 @@ public class FishingRod_Script : MonoBehaviour
 
         startPos = fishingRod.localPosition;
         endPos = fishingRod.localPosition - (Vector3.forward * .5f);
-        Debug.Log("a");
+        chargeBar = GetComponent<GameObject>();
     }
 
     private void Update()
@@ -41,6 +46,29 @@ public class FishingRod_Script : MonoBehaviour
 
     }
 
+    public bool IsItCharged()
+    {
+        return isFullCharged ? true : false;
+    }
+
+    private void RodStart()
+    {
+        if (atThisTime < duration)
+        {
+            atThisTime += Time.deltaTime;
+
+            percent = atThisTime / duration;
+            curve = percent * percent * (2f * percent);
+            fishingRod.localPosition = Vector3.Lerp(startPos, endPos, Mathf.Clamp01(curve));
+
+            if (fishingRod.localPosition == endPos)
+            {
+                isFullCharged = true;
+                chargeBar.SetActive(true); // hatali
+
+            }
+        }
+    }
     private void RodEnd()
     {
         currentPos = fishingRod.localPosition;
@@ -61,22 +89,5 @@ public class FishingRod_Script : MonoBehaviour
             percent = 0;
             atThisTime = 0; 
         }
-    }
-
-    private void RodStart()
-    {
-        if (atThisTime < duration)
-        {
-            atThisTime += Time.deltaTime;
-
-            percent = atThisTime / duration;
-            curve = percent * percent * (2f * percent);
-
-            fishingRod.localPosition = Vector3.Lerp(startPos, endPos, Mathf.Clamp01(curve));
-        }
-    }
-    public void OnDisable()
-    {
-        baitHolder.transform.localPosition = new Vector3(.6f, 0.3f, 0.8f);
     }
 }

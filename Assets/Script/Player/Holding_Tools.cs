@@ -3,11 +3,13 @@ using UnityEngine.InputSystem;
 
 public class Holding_Tools : MonoBehaviour
 {
-    [SerializeField] private Transform baitHolder;
-    FishingRod_Script fRod;
-    [SerializeField] private int selectedTool = 0;
     InputAction next;
     InputAction previous;
+
+    [SerializeField] private int selectedTool = 0;
+    [SerializeField] private Transform toolHolder;
+    [SerializeField] private GameObject[] tools;
+    private GameObject hand;
 
     private void Start()
     {
@@ -19,39 +21,32 @@ public class Holding_Tools : MonoBehaviour
 
     private void Update()
     {
-        int currentSelectedTool = selectedTool;
-        if (next.WasPressedThisFrame())
-        {
-            if (selectedTool >= transform.childCount -1)
-                selectedTool = 0;
-            else
-                selectedTool++;
+        int previousSelectedTool = selectedTool;
 
-        }
-        if (previous.WasPressedThisFrame())
+        if (next != null && next.WasPressedThisFrame())
         {
-            if (selectedTool <= 0)
-                selectedTool = transform.childCount -1;
-            else
-                selectedTool--;
+            selectedTool++;
+            if (selectedTool >= tools.Length)
+                selectedTool = 0; // Başa dön
         }
 
-        if (currentSelectedTool != selectedTool)
+        if (previous != null && previous.WasPressedThisFrame())
+        {
+            selectedTool--;
+            if (selectedTool < 0)
+                selectedTool = tools.Length - 1; // Sona git
+        }
+
+        if (previousSelectedTool != selectedTool)
             SelectTool();
     }
 
     private void SelectTool()
     {
-        int i = 0;
-        foreach (Transform weapon in transform)
-        {
-            if (i == selectedTool)
-            {
-                weapon.gameObject.SetActive(true);
-            }
-            else
-                weapon.gameObject.SetActive(false);
-            i++;
-        }
+        if (hand != null) Destroy(hand);
+
+        hand = Instantiate(tools[selectedTool], toolHolder.position, toolHolder.rotation);
+
+        hand.transform.SetParent(toolHolder);
     }
 }
