@@ -24,11 +24,9 @@ public class RopeControllerSimple : MonoBehaviour
     float winchSpeed = 2f;
 
     //The joint we use to approximate the rope
-    SpringJoint springJoint;
 
     void Start() 
 	{
-        springJoint = whatTheRopeIsConnectedTo.GetComponent<SpringJoint>();
 
         //Init the line renderer we use to display the rope
         lineRenderer = GetComponent<LineRenderer>();
@@ -83,14 +81,6 @@ public class RopeControllerSimple : MonoBehaviour
         //Is about 146000
         float kRope = ropeForce / 0.01f;
 
-        //print(ropeMass);
-
-        //Add the value to the spring
-        springJoint.spring = kRope * 1.0f;
-        springJoint.damper = kRope * 0.8f;
-
-        //Update length of the rope
-        springJoint.maxDistance = ropeLength;
     }
 
     //Display the rope with a line renderer

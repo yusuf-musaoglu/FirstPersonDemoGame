@@ -10,7 +10,6 @@ public class FishMovment : MonoBehaviour
     private bool leftRay;
     private bool rightRay;
 
-    InputAction f;
     private float moveTimer;
     [SerializeField] private float moveDuration;
     Vector3 currentPos;
@@ -19,7 +18,7 @@ public class FishMovment : MonoBehaviour
     
     void Start()
     {
-        f = InputSystem.actions.FindAction("Interact");
+        
     }
     void Update()
     {

@@ -16,7 +16,7 @@ public class Player : MonoBehaviour
     private CharacterController controller;
 
     private Vector2 moveInput;
-    public Vector3 move;
+    private Vector3 move;
     private float moveX;
     private float moveY;
     private Vector2 turnInput;
