@@ -63,12 +63,10 @@ public class FishingRod_Script : MonoBehaviour
         if (chargedCanceled)
             RodEnd();
 
-        if (isFishingNow && leftClick.WasPressedThisFrame())
+        if (isFishingNow && leftClick.WasPressedThisFrame() || 
+            Physics.CheckBox(baitHolder.position + (baitHolder.up * -.1f), new Vector3(.15f,.2f,.15f), quaternion.identity, groundMask))
             ResetRod();
         
-
-        // if (isFishingNow && Physics.CheckBox(baitHolder.position + (baitHolder.up * -.1f), new Vector3(.15f,.2f,.15f), quaternion.identity, groundMask))
-        //     FishingPose();
     }
 
     private void FishingPose()
@@ -133,10 +131,9 @@ public class FishingRod_Script : MonoBehaviour
 
         baitHolderRB.constraints &= ~RigidbodyConstraints.FreezePosition; // rotasyonu unfreeze yapiyor
 
-        Vector3 direction = transform.forward;
-        direction.y = 1f;
-        
+        Vector3 direction = transform.forward + transform.up;
         baitHolderRB.AddForce(direction.normalized * chargeBar.ChargePowerLevel(), ForceMode.Impulse);
+        
     }
     private void ResetRod()
     {

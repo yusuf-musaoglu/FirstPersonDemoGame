@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 1196056379698793651}
   - component: {fileID: 5602535947703511156}
   - component: {fileID: 1517327959282895739}
-  - component: {fileID: 2916367764258333364}
   m_Layer: 3
   m_Name: Stick
   m_TagString: Untagged
@@ -88,27 +87,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &2916367764258333364
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2917154469019198899}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5757849515232194484
 GameObject:
   m_ObjectHideFlags: 0
@@ -450,10 +428,11 @@ MonoBehaviour:
   chargeBarUI: {fileID: 1136864481604335771, guid: 3037073f196e03ddfa0d1465015af1d8, type: 3}
   chargeBar: {fileID: 230205173815114191, guid: 3037073f196e03ddfa0d1465015af1d8, type: 3}
   baitHolderRB: {fileID: 2826245086524703750}
-  fishingPose: 0
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+  fishingPose: 0
+  resetFishingPose: 0
 --- !u!1 &9207311397052902925
 GameObject:
   m_ObjectHideFlags: 0

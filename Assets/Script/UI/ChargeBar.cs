@@ -45,11 +45,11 @@ public class ChargeBar : MonoBehaviour
     {
         // guc dengesi: 20 / 16 / 8 / 4 / 2
         if ((slider.value >= 0 && slider.value < .2f) || (slider.value > .8f && slider.value <= 1f))
-            return 2f;
-        else if ((slider.value >= .2f && slider.value < .36f) || (slider.value > .64f && slider.value <= .8f))
             return 4f;
-        else if ((slider.value >= .36f && slider.value < .44f) || (slider.value > .56f && slider.value <= .64f))
+        else if ((slider.value >= .2f && slider.value < .36f) || (slider.value > .64f && slider.value <= .8f))
             return 6f;
+        else if ((slider.value >= .36f && slider.value < .44f) || (slider.value > .56f && slider.value <= .64f))
+            return 7f;
         else if ((slider.value >= .44f && slider.value < .48f) || (slider.value > .52f && slider.value <= .56f))
             return 8f;
         else

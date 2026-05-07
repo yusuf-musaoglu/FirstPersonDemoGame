@@ -16,7 +16,7 @@ public class Player : MonoBehaviour
     private CharacterController controller;
 
     private Vector2 moveInput;
-    private Vector3 move;
+    public Vector3 move;
     private float moveX;
     private float moveY;
     private Vector2 turnInput;
@@ -64,7 +64,6 @@ public class Player : MonoBehaviour
     [SerializeField] private float climbSpeed;
     [SerializeField] private float maxDistange;
     private bool wallClimb;
-    private bool wallCheck;
 
     [Header("Slide Ditails")]
     [SerializeField] private float slideTime;
@@ -88,8 +87,6 @@ public class Player : MonoBehaviour
     [SerializeField] private float rollSpeed = 1;
     [SerializeField] private float duration;
     [SerializeField] private Vector3 triggerOfRolling;
-    
-
 
 
     private void Awake()
@@ -264,7 +261,7 @@ public class Player : MonoBehaviour
         lookAction.Enable();
         OnEnableAbility();       
     }
-    public void CheckForEdge() 
+    private void CheckForEdge() 
     {  
         Vector3 origin = transform.position + (transform.forward * .6f) + (Vector3.up * 2f);
         wallClimb = Physics.Raycast(origin, Vector3.down * 1.5f, out RaycastHit hitPos, maxDistange);
