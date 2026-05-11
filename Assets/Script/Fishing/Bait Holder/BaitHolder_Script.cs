@@ -15,18 +15,14 @@ public class BaitHolder_Script : MonoBehaviour
 
     private void Update()
     {
-        if (frs.fishingPose)
-        {
+        if (frs.throwingNow)
             transform.SetParent(null);
-        }
         else if (frs.resetFishingPose)
         {
             transform.SetParent(originalParent);
             transform.localPosition = originalPos;
             frs.resetFishingPose = false;
-            Debug.Log(frs.resetFishingPose);
         }
-
     }
 }
 
