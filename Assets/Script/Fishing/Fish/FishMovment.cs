@@ -1,7 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using System.Collections;
-
 
 public class FishMovment : MonoBehaviour
 {
@@ -13,29 +11,97 @@ public class FishMovment : MonoBehaviour
     private float moveTimer;
     [SerializeField] private float moveDuration;
     Vector3 currentPos;
-    
+    public bool inZone = false;
+    public bool resetPos = false;
 
-    
+    [Header("Bait Details")]
+    private FishingRod_Script frs;
+    [SerializeField] private Transform baitHolder;
+    [SerializeField] private LayerMask baitLayer;
+    private float timer = 0;
+
+
     void Start()
     {
-        
-    }
-    void Update()
-    {
-        RayDetection();
+        baitHolder = GetComponent<Transform>();
+        frs = FindFirstObjectByType<FishingRod_Script>();
 
-        moveTimer += Time.deltaTime;
-        if (ShouldIMove())
+        GameManager.Instance.RegisterAllTheFish(this);
+    }
+    private void Update()
+    {
+        if (!inZone)
         {
-            StartCoroutine(Rotation(Random.Range(1f, 120f)));
+            RayDetection();
+
+            moveTimer += Time.deltaTime;
+            if (ShouldIMove())
+            {
+                StartCoroutine(Rotation(Random.Range(1f, 120f)));
+            }
+        }
+        if (inZone)
+        {
+            StartCoroutine(FishCharmed());
+        }
+       
+        if (frs.isFishing && !GameManager.Instance.pickedAFish && TimerDeley())
+        {
+            GameManager.Instance.PerformRandomSelection();
+            timer = 0;
+        }
+        if (frs.isFishing && Physics.CheckSphere(baitHolder.position, 3))
+        {
+            GameManager.Instance.FishInTheRange(this);
+        }
+        if (GameManager.Instance.resetFishPose)
+            ResetPosition();
+
+    }
+
+    public void ResetPosition()
+    {
+        transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z);
+        inZone = false;
+    }
+
+    private bool TimerDeley()
+    {
+
+        timer += Time.deltaTime;
+        return timer > 2f ? true : false;
+    }
+
+    public void OnSelected(bool selected)
+    {
+        if (!selected)
+        {
+            inZone = true;
         }
     }
-
-    private void RayDetection()
+    public void OnNotSelected()
     {
-        forwardRay = Physics.Raycast(transform.position + (transform.forward * .4f), transform.forward, 1);
-        rightRay = Physics.Raycast(transform.position + (transform.right * .2f), transform.right, 1);
-        leftRay = Physics.Raycast(transform.position + (transform.right * -.2f), transform.right * -1, 1);
+        inZone = false;
+    }
+
+    private IEnumerator FishCharmed()
+    {
+        transform.SetParent(null);
+
+        float timer = 0f;
+
+        Vector3 relativePos = BaitHolder_Script.Instance.transform.position - transform.position;
+        Quaternion rotationGoal = Quaternion.LookRotation(relativePos, Vector3.up);
+
+        Quaternion currentRotation = transform.rotation;
+
+        while (timer < 1f)
+        {
+            timer += Time.deltaTime * 8;
+            transform.rotation = Quaternion.Slerp(currentRotation, rotationGoal, timer);
+
+            yield return null;
+        }
     }
 
     public IEnumerator Rotation(float angle)
@@ -59,7 +125,6 @@ public class FishMovment : MonoBehaviour
 
         StartCoroutine(Movement());
     }
-
     
     private IEnumerator Movement()
     {
@@ -71,9 +136,11 @@ public class FishMovment : MonoBehaviour
         while (timer < 1f)
         {
             timer += Time.deltaTime;
+
+            if (forwardRay || inZone)
+                yield break;
+
             currentPos = transform.position;
-            if (forwardRay)
-                break;
 
             transform.position = Vector3.Slerp(startPos, forwardRay ? currentPos : targetPos, timer);
            
@@ -98,6 +165,13 @@ public class FishMovment : MonoBehaviour
         return moveTimer >= moveDuration ? Random.value < .5f : false;
     }
     
+    private void RayDetection()
+    {
+        forwardRay = Physics.Raycast(transform.position + (transform.forward * .4f), transform.forward, 1);
+        rightRay = Physics.Raycast(transform.position + (transform.right * .2f), transform.right, 1);
+        leftRay = Physics.Raycast(transform.position + (transform.right * -.2f), transform.right * -1, 1);
+    }
+
     private void OnDrawGizmos()
     {
         Ray r = new Ray(transform.position + (transform.forward * .4f), transform.forward);
@@ -108,5 +182,7 @@ public class FishMovment : MonoBehaviour
 
         Ray rL = new Ray(transform.position + (transform.right * -.2f), transform.right * -1);
         Gizmos.DrawRay(rL);
+
+        Gizmos.DrawRay(transform.position + transform.forward * .7f, Vector3.up);
     }
 }

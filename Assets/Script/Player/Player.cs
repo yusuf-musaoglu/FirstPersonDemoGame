@@ -57,7 +57,6 @@ public class Player : MonoBehaviour
     
     //[SerializeField] private float groundDistance = 0.6f;
     private float groundTimer = 0;
-    private bool isGrounded;
     private bool isGroundDetect;
 
     [Header("Wall Check")]

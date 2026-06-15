@@ -55,6 +55,7 @@
     <Compile Include="Assets/Script/Fishing/FishingRod_Script.cs" />
     <Compile Include="Assets/Script/Player/Holding_Tools.cs" />
     <Compile Include="Assets/Script/Fishing/Rope/RopeControllerSimple.cs" />
+    <Compile Include="Assets/Script/GameManager.cs" />
     <Compile Include="Assets/Script/Player/Player.cs" />
     <Compile Include="Assets/Script/Fishing/Rope/BezierCurve.cs" />
     <Compile Include="Assets/Script/Fishing/Aquarium_Script.cs" />

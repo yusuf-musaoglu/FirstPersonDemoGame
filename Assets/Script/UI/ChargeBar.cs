@@ -5,11 +5,8 @@ public class ChargeBar : MonoBehaviour
 {
     private InputAction releaseTheRod;
     private Slider slider;
-    public FishingRod_Script frs;
     private bool increase = true; 
     
-    public float value;
-
     private void Start()
     {
         releaseTheRod = InputSystem.actions.FindAction("LeftClick");

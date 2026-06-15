@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Bait
+  - Fish
   layers:
   - Default
   - TransparentFX
@@ -15,8 +17,8 @@ TagManager:
   - Air_Forge
   - Ladder
   - Wall_Climb
-  - 
-  - 
+  - Fish
+  - Bait
   - 
   - 
   - 

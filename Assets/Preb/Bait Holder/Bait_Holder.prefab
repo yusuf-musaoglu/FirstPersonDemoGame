@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 462219351125008748}
   - component: {fileID: 5180468478270491047}
   - component: {fileID: 1340025062201439677}
-  m_Layer: 3
+  m_Layer: 11
   m_Name: Bait_Holder
-  m_TagString: Untagged
+  m_TagString: Bait
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -149,3 +149,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72ca91f1943ef6c46ac416955e228646, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  radius: 1.5
+  moveSpeed: 1
+  zone: 0.5
+  fishLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  fish: []

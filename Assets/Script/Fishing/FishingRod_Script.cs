@@ -1,3 +1,4 @@
+using System;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -38,8 +39,9 @@ public class FishingRod_Script : MonoBehaviour
     [SerializeField] private LayerMask waterMask;
     private bool thouchTheWater;
     public bool resetFishingPose = false;
-    private float waveTimer;
-    private bool up = true;
+    public bool isFishing {get; private set;}
+    private FishMovment fishMovment;
+    
 
     
     private void Awake()
@@ -52,13 +54,11 @@ public class FishingRod_Script : MonoBehaviour
         Canvas c = FindAnyObjectByType<Canvas>();
         if (c != null)
             canvas = c.transform;
+        
     }
 
     private void Update()
     {
-        thouchTheWater = Physics.CheckSphere(baitHolder.position + (baitHolder.up * -0.03f), 0.1f, waterMask);
-
-
         if (leftClick.IsPressed())
             RodStart();
 
@@ -68,42 +68,30 @@ public class FishingRod_Script : MonoBehaviour
         if (chargedCanceled)
             RodEnd();
 
-        if (throwingNow && leftClick.WasPressedThisFrame()
+        if (isFishing && leftClick.WasPressedThisFrame()
             || Physics.CheckSphere(baitHolder.position + (baitHolder.up * -.1f), .1f, groundMask))
             ResetRod();
 
-        if (thouchTheWater)
-        {
-            FishingPose();
-            
-        }
-        Debug.Log(thouchTheWater);
-            
-        
+        if (throwingNow)
+            if (Physics.CheckSphere(baitHolder.position - baitHolder.up * -.06f, .1f, waterMask))
+                FishingPose();
     }
 
     private void FishingPose()
     {
+        isFishing = true;
+
+        baitHolder.transform.rotation = Quaternion.Euler(Vector3.zero);
         baitHolderRB.useGravity = false;
 
-     
-        baitHolderRB.constraints = RigidbodyConstraints.FreezePosition;
-        baitHolderRB.constraints = ~RigidbodyConstraints.FreezePosition;
-        
-        
+        baitHolderRB.constraints = RigidbodyConstraints.FreezeAll;
 
-        /* if (up)
-        {
-            waveTimer += Time.deltaTime;
-            baitHolder.position = Vector3.Slerp(baitHolder.position, baitHolder.position + baitHolder.transform.up * .2f, waveTimer);
-            if (waveTimer >= 1) up = false;
-        }
-        else if (!up)
-        {
-            waveTimer -= Time.deltaTime;
-            baitHolder.position = Vector3.Slerp(baitHolder.position, baitHolder.position - baitHolder.transform.up * .2f, waveTimer);
-            if (waveTimer <= 0) up = true;
-        } */
+        ReelUp();
+    }
+
+    private void ReelUp()
+    {
+        
     }
 
     private void RodStart()
@@ -161,7 +149,7 @@ public class FishingRod_Script : MonoBehaviour
         throwingNow = true;
         baitHolderRB.useGravity = true;
 
-        baitHolderRB.constraints &= ~RigidbodyConstraints.FreezePosition; // rotasyonu unfreeze yapiyor
+        baitHolderRB.constraints &= ~RigidbodyConstraints.FreezeAll;
 
         Vector3 direction = transform.forward + transform.up;
         if (!thouchTheWater)
@@ -171,12 +159,14 @@ public class FishingRod_Script : MonoBehaviour
     private void ResetRod()
     {
         resetFishingPose = true;
-        baitHolderRB.constraints = RigidbodyConstraints.FreezePosition;
+        baitHolderRB.constraints = RigidbodyConstraints.FreezeAll;
         throwingNow = false;
+        isFishing = false;
+        GameManager.Instance.resetFishPose = true;
     }    
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(baitHolder.position + (baitHolder.up * -0.03f), 0.1f);
+        Gizmos.DrawWireSphere(baitHolder.position - baitHolder.up * -.06f, 0.1f);
     }
 }

@@ -183,7 +183,7 @@ GameObject:
   - component: {fileID: 7674907577745069745}
   - component: {fileID: 336230857233689195}
   - component: {fileID: 2516622713484831364}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Fish Script
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -198,15 +198,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6661646513017525019}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.06078722, z: 0, w: 0.99815077}
-  m_LocalPosition: {x: 40.11, y: 1.32, z: 18.15}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1249217623998173116}
   - {fileID: 1999893148868076016}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 6.97, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &336230857233689195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220,6 +220,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveDuration: 3
+  inZone: 0
+  resetPos: 0
+  baitHolder: {fileID: 7959746696501378542, guid: 95b2e05f552237d38aee002c20b948ca, type: 3}
+  baitLayer:
+    serializedVersion: 2
+    m_Bits: 2048
 --- !u!136 &2516622713484831364
 CapsuleCollider:
   m_ObjectHideFlags: 0
