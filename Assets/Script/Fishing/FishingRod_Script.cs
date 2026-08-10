@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 public class FishingRod_Script : MonoBehaviour
 {
+    public static FishingRod_Script Instance {get; private set;}
     private InputAction leftClick;
 
     [Header("Rod Details")]
@@ -40,12 +41,19 @@ public class FishingRod_Script : MonoBehaviour
     private bool thouchTheWater;
     public bool resetFishingPose = false;
     public bool isFishing {get; private set;}
-    private FishMovment fishMovment;
     
 
     
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+            Destroy(gameObject);
+
         leftClick = InputSystem.actions.FindAction("LeftClick");
 
         startPos = fishingRod.localPosition;
@@ -162,7 +170,10 @@ public class FishingRod_Script : MonoBehaviour
         baitHolderRB.constraints = RigidbodyConstraints.FreezeAll;
         throwingNow = false;
         isFishing = false;
+
+
         GameManager.Instance.resetFishPose = true;
+        GameManager.Instance.pickedAFish = false;
     }    
 
     private void OnDrawGizmos()

@@ -5,10 +5,13 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance {get; private set;}
 
-    private List<FishMovment> allTheFish = new List<FishMovment>();
-    private List<FishMovment> fishInTheRange = new List<FishMovment>();
+    FishingRod_Script frs;
+    BaitHolder_Script baitHolder;
+
+    public List<FishMovment> fishInTheRange = new List<FishMovment>();
 
     private FishMovment selectedFish = null;
+    public bool charmed = false;
     public bool pickedAFish = false;
     public bool resetFishPose = false;
 
@@ -21,9 +24,9 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
         }
         else
-        {
             Destroy(gameObject);
-        }
+
+        frs = FishingRod_Script.Instance;
     }
 
     void Update()
@@ -31,34 +34,27 @@ public class GameManager : MonoBehaviour
         
     }
 
-    public void RegisterAllTheFish(FishMovment obj)
-    {
-        if (!allTheFish.Contains(obj))
-        {
-            allTheFish.Add(obj);
-        }
-    }
     public void FishInTheRange(FishMovment obj)
     {
+        
         if (!fishInTheRange.Contains(obj))
         {
             fishInTheRange.Add(obj);
         }
+            
     }
 
     public void PerformRandomSelection()
     {
-        if (allTheFish.Count == 0 || fishInTheRange.Count == 0)
+        if (fishInTheRange.Count == 0)
         {
             Debug.LogWarning("balik yok!");
             return;
         }
-        
+
         int randomIndex = Random.Range(0, fishInTheRange.Count);
         selectedFish = fishInTheRange[randomIndex];
-        Debug.Log(randomIndex);
         Debug.Log(fishInTheRange.Count);
-
 
         foreach (FishMovment obj in fishInTheRange)
         {
@@ -72,5 +68,11 @@ public class GameManager : MonoBehaviour
                 obj.OnNotSelected();
             }
         }
+    }
+    public void PerformResetIndex(FishMovment obj)
+    {
+        obj.OnNotSelected();
+        selectedFish = null;
+        Debug.Log(selectedFish);
     }
 }

@@ -2451,6 +2451,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b629e36f5c9374f29bc4d39012c3988, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fishInTheRange: []
+  charmed: 0
+  pickedAFish: 0
+  resetFishPose: 0
 --- !u!1 &508571711
 GameObject:
   m_ObjectHideFlags: 0

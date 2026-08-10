@@ -220,8 +220,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveDuration: 3
-  inZone: 0
-  resetPos: 0
   baitHolder: {fileID: 7959746696501378542, guid: 95b2e05f552237d38aee002c20b948ca, type: 3}
   baitLayer:
     serializedVersion: 2

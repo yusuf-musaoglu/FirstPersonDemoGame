@@ -11,26 +11,27 @@ public class FishMovment : MonoBehaviour
     private float moveTimer;
     [SerializeField] private float moveDuration;
     Vector3 currentPos;
-    public bool inZone = false;
-    public bool resetPos = false;
+    private bool inZone;
 
     [Header("Bait Details")]
     private FishingRod_Script frs;
     [SerializeField] private Transform baitHolder;
     [SerializeField] private LayerMask baitLayer;
     private float timer = 0;
-
+    private Transform originParent;
+    private Transform originRotation;
 
     void Start()
     {
         baitHolder = GetComponent<Transform>();
         frs = FindFirstObjectByType<FishingRod_Script>();
 
-        GameManager.Instance.RegisterAllTheFish(this);
+        originParent = transform.parent;
+
     }
     private void Update()
     {
-        if (!inZone)
+        if (!inZone) //inzone
         {
             RayDetection();
 
@@ -47,27 +48,27 @@ public class FishMovment : MonoBehaviour
        
         if (frs.isFishing && !GameManager.Instance.pickedAFish && TimerDeley())
         {
-            GameManager.Instance.PerformRandomSelection();
-            timer = 0;
-        }
-        if (frs.isFishing && Physics.CheckSphere(baitHolder.position, 3))
-        {
             GameManager.Instance.FishInTheRange(this);
+            GameManager.Instance.PerformRandomSelection();
+            Debug.Log(timer);
+            timer = 0;
         }
         if (GameManager.Instance.resetFishPose)
             ResetPosition();
-
     }
 
     public void ResetPosition()
     {
-        transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, transform.eulerAngles.z);
+        transform.SetParent(originParent);
         inZone = false;
+
+        transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
+        GameManager.Instance.PerformResetIndex(this);
+        GameManager.Instance.resetFishPose = false;
     }
 
     private bool TimerDeley()
     {
-
         timer += Time.deltaTime;
         return timer > 2f ? true : false;
     }
@@ -97,6 +98,9 @@ public class FishMovment : MonoBehaviour
 
         while (timer < 1f)
         {
+            if (!inZone)
+                yield break;
+
             timer += Time.deltaTime * 8;
             transform.rotation = Quaternion.Slerp(currentRotation, rotationGoal, timer);
 
