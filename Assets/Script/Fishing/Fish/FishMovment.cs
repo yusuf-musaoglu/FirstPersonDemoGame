@@ -27,6 +27,7 @@ public class FishMovment : MonoBehaviour
         frs = FindFirstObjectByType<FishingRod_Script>();
 
         originParent = transform.parent;
+        
 
     }
     private void Update()
@@ -46,43 +47,58 @@ public class FishMovment : MonoBehaviour
             StartCoroutine(FishCharmed());
         }
        
-        if (frs.isFishing && !GameManager.Instance.pickedAFish && TimerDeley())
+        if (frs.isFishing && !GameManager.Instance.pickedAFish)
         {
-            GameManager.Instance.FishInTheRange(this);
-            GameManager.Instance.PerformRandomSelection();
-            Debug.Log(timer);
-            timer = 0;
+            if (TimerDeley())
+            {
+                GameManager.Instance.PerformRandomSelection();
+            }
         }
-        if (GameManager.Instance.resetFishPose)
-            ResetPosition();
+        // if (GameManager.Instance.resetFishPose)
+        //     ResetPosition();
     }
 
     public void ResetPosition()
     {
-        transform.SetParent(originParent);
+        Debug.Log("reset");
+        
         inZone = false;
-
-        transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
+        
         GameManager.Instance.PerformResetIndex(this);
         GameManager.Instance.resetFishPose = false;
+
+        
     }
+
+    public void ResetFunction()
+    {
+        inZone = false;
+        timer = 0;
+        transform.SetParent(originParent);
+        transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
+
+    } 
 
     private bool TimerDeley()
     {
+        Debug.Log(timer);
         timer += Time.deltaTime;
-        return timer > 2f ? true : false;
+        return timer >= 2f ? true : false;
     }
 
     public void OnSelected(bool selected)
     {
         if (!selected)
         {
+            timer = 0;
             inZone = true;
         }
     }
     public void OnNotSelected()
     {
         inZone = false;
+        timer = 0;
+
     }
 
     private IEnumerator FishCharmed()

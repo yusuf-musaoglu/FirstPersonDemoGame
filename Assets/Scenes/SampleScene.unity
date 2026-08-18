@@ -2455,6 +2455,9 @@ MonoBehaviour:
   charmed: 0
   pickedAFish: 0
   resetFishPose: 0
+  fishLayer:
+    serializedVersion: 2
+    m_Bits: 1024
 --- !u!1 &508571711
 GameObject:
   m_ObjectHideFlags: 0

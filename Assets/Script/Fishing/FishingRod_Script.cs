@@ -171,9 +171,7 @@ public class FishingRod_Script : MonoBehaviour
         throwingNow = false;
         isFishing = false;
 
-
-        GameManager.Instance.resetFishPose = true;
-        GameManager.Instance.pickedAFish = false;
+        GameManager.Instance.ResetTheFish();
     }    
 
     private void OnDrawGizmos()

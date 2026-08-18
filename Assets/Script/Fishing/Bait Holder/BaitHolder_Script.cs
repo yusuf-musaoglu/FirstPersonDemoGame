@@ -11,8 +11,8 @@ public class BaitHolder_Script : MonoBehaviour
 
     public float radius = 3f;
     
-    [SerializeField] private LayerMask fishLayer;
-    public Collider[] fish;
+    [SerializeField] public LayerMask fishLayer;
+    public Collider[] fishesInRange;
 
     private void Start()
     {
@@ -36,7 +36,7 @@ public class BaitHolder_Script : MonoBehaviour
 
         if (frs.isFishing)
         {
-            //fish = Physics.OverlapSphere(transform.position, radius, fishLayer);
+            fishesInRange = Physics.OverlapSphere(transform.position, radius, fishLayer);
             
         }
     }

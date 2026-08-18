@@ -5,15 +5,18 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance {get; private set;}
 
-    FishingRod_Script frs;
-    BaitHolder_Script baitHolder;
+    private BaitHolder_Script baitHolder;
 
     public List<FishMovment> fishInTheRange = new List<FishMovment>();
 
+    private float timerMeter;
     private FishMovment selectedFish = null;
     public bool charmed = false;
     public bool pickedAFish = false;
     public bool resetFishPose = false;
+    public Ray ray;
+    private Collider[] hits;
+    [SerializeField] private LayerMask fishLayer;
 
 
     void Awake()
@@ -26,22 +29,38 @@ public class GameManager : MonoBehaviour
         else
             Destroy(gameObject);
 
-        frs = FishingRod_Script.Instance;
+        baitHolder = FindAnyObjectByType<BaitHolder_Script>();
+
+        timerMeter = 0;
     }
 
     void Update()
     {
+        if (FishingRod_Script.Instance.isFishing)
+            FishInTheRange();
         
+        TimeMeter();
     }
 
-    public void FishInTheRange(FishMovment obj)
+    public float TimeMeter()
     {
-        
-        if (!fishInTheRange.Contains(obj))
+        return timerMeter += Time.deltaTime; 
+    }
+
+    public void FishInTheRange()
+    {
+        fishInTheRange.Clear();
+
+        hits = Physics.OverlapSphere(BaitHolder_Script.Instance.transform.position, BaitHolder_Script.Instance.radius, fishLayer);
+        foreach (Collider col in hits)
         {
-            fishInTheRange.Add(obj);
+            FishMovment fish = col.GetComponent<FishMovment>();
+
+            if (!fishInTheRange.Contains(fish))
+            {
+                fishInTheRange.Add(fish);
+            }
         }
-            
     }
 
     public void PerformRandomSelection()
@@ -54,7 +73,6 @@ public class GameManager : MonoBehaviour
 
         int randomIndex = Random.Range(0, fishInTheRange.Count);
         selectedFish = fishInTheRange[randomIndex];
-        Debug.Log(fishInTheRange.Count);
 
         foreach (FishMovment obj in fishInTheRange)
         {
@@ -69,6 +87,19 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    public void ResetTheFish()
+    {
+
+        Debug.Log("resres");
+        resetFishPose = true;
+        pickedAFish = false;
+        if (selectedFish != null)
+            selectedFish.ResetFunction();
+        selectedFish = null;
+
+    }    
+
     public void PerformResetIndex(FishMovment obj)
     {
         obj.OnNotSelected();
