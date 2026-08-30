@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using Unity.VisualScripting;
 
 public class FishMovment : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class FishMovment : MonoBehaviour
     private bool leftRay;
     private bool rightRay;
 
+    public bool startCount;
+
     private float moveTimer;
     [SerializeField] private float moveDuration;
     Vector3 currentPos;
@@ -15,22 +18,17 @@ public class FishMovment : MonoBehaviour
 
     [Header("Bait Details")]
     private FishingRod_Script frs;
-    [SerializeField] private Transform baitHolder;
     [SerializeField] private LayerMask baitLayer;
-    private float timer = 0;
+    [SerializeField] private float charmCoolDown;
     private Transform originParent;
-    private Transform originRotation;
 
     void Start()
     {
-        baitHolder = GetComponent<Transform>();
         frs = FindFirstObjectByType<FishingRod_Script>();
 
         originParent = transform.parent;
-        
-
     }
-    private void Update()
+    private void FixedUpdate()
     {
         if (!inZone) //inzone
         {
@@ -44,63 +42,40 @@ public class FishMovment : MonoBehaviour
         }
         if (inZone)
         {
+            if (TimerDeley())
             StartCoroutine(FishCharmed());
         }
-       
+
         if (frs.isFishing && !GameManager.Instance.pickedAFish)
         {
-            if (TimerDeley())
-            {
-                GameManager.Instance.PerformRandomSelection();
-            }
+            GameManager.Instance.PerformRandomSelection();
         }
-        // if (GameManager.Instance.resetFishPose)
-        //     ResetPosition();
-    }
-
-    public void ResetPosition()
-    {
-        Debug.Log("reset");
-        
-        inZone = false;
-        
-        GameManager.Instance.PerformResetIndex(this);
-        GameManager.Instance.resetFishPose = false;
-
-        
     }
 
     public void ResetFunction()
     {
         inZone = false;
-        timer = 0;
         transform.SetParent(originParent);
         transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
-
     } 
 
     private bool TimerDeley()
     {
-        Debug.Log(timer);
-        timer += Time.deltaTime;
-        return timer >= 2f ? true : false;
+        return GameManager.Instance.TimeMeter >= charmCoolDown ? true : false;
     }
-
     public void OnSelected(bool selected)
     {
         if (!selected)
         {
-            timer = 0;
             inZone = true;
+            charmCoolDown = GameManager.Instance.TimeMeter + 3f;
+            Debug.Log("cooldown secilmeden once: " + charmCoolDown);
         }
     }
     public void OnNotSelected()
     {
         inZone = false;
-        timer = 0;
-
     }
-
     private IEnumerator FishCharmed()
     {
         transform.SetParent(null);
@@ -123,7 +98,6 @@ public class FishMovment : MonoBehaviour
             yield return null;
         }
     }
-
     public IEnumerator Rotation(float angle)
     {
         Quaternion startRotation = transform.rotation;
@@ -145,7 +119,6 @@ public class FishMovment : MonoBehaviour
 
         StartCoroutine(Movement());
     }
-    
     private IEnumerator Movement()
     {
         Vector3 startPos = transform.position;
@@ -184,14 +157,12 @@ public class FishMovment : MonoBehaviour
     {
         return moveTimer >= moveDuration ? Random.value < .5f : false;
     }
-    
     private void RayDetection()
     {
         forwardRay = Physics.Raycast(transform.position + (transform.forward * .4f), transform.forward, 1);
         rightRay = Physics.Raycast(transform.position + (transform.right * .2f), transform.right, 1);
         leftRay = Physics.Raycast(transform.position + (transform.right * -.2f), transform.right * -1, 1);
     }
-
     private void OnDrawGizmos()
     {
         Ray r = new Ray(transform.position + (transform.forward * .4f), transform.forward);

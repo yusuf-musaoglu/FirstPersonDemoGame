@@ -5,21 +5,18 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance {get; private set;}
 
-    private BaitHolder_Script baitHolder;
-
     public List<FishMovment> fishInTheRange = new List<FishMovment>();
 
-    private float timerMeter;
+    public float timerMeter;
     private FishMovment selectedFish = null;
     public bool charmed = false;
     public bool pickedAFish = false;
-    public bool resetFishPose = false;
     public Ray ray;
     private Collider[] hits;
     [SerializeField] private LayerMask fishLayer;
 
 
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
         {
@@ -29,24 +26,18 @@ public class GameManager : MonoBehaviour
         else
             Destroy(gameObject);
 
-        baitHolder = FindAnyObjectByType<BaitHolder_Script>();
-
-        timerMeter = 0;
     }
 
-    void Update()
+    private void FixedUpdate()
     {
         if (FishingRod_Script.Instance.isFishing)
             FishInTheRange();
+
+        timerMeter += Time.deltaTime; 
         
-        TimeMeter();
     }
 
-    public float TimeMeter()
-    {
-        return timerMeter += Time.deltaTime; 
-    }
-
+    public float TimeMeter => timerMeter;
     public void FishInTheRange()
     {
         fishInTheRange.Clear();
@@ -90,20 +81,15 @@ public class GameManager : MonoBehaviour
 
     public void ResetTheFish()
     {
-
-        Debug.Log("resres");
-        resetFishPose = true;
         pickedAFish = false;
         if (selectedFish != null)
             selectedFish.ResetFunction();
         selectedFish = null;
-
     }    
 
     public void PerformResetIndex(FishMovment obj)
     {
         obj.OnNotSelected();
         selectedFish = null;
-        Debug.Log(selectedFish);
     }
 }

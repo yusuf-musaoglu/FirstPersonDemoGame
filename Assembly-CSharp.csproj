@@ -60,7 +60,6 @@
     <Compile Include="Assets/Script/Fishing/Rope/BezierCurve.cs" />
     <Compile Include="Assets/Script/Fishing/Aquarium_Script.cs" />
     <Compile Include="Assets/IgniteCoders/Simple Water Shader/Resources/WaterReflection.cs" />
-    <Compile Include="Assets/Script/Player/PlayerTest.cs" />
     <Compile Include="Assets/Script/Fishing/Fish/FishMovment.cs" />
   </ItemGroup>
   <ItemGroup>
